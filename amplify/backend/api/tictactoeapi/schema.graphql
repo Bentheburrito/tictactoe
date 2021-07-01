@@ -1,0 +1,6 @@
+type Game @model @aws_api_key {
+  id: ID!
+  name: String!
+  squares: [String]!
+  username: String
+}

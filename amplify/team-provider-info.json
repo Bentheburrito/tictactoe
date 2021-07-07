@@ -40,6 +40,12 @@
     "categories": {
       "auth": {
         "tictactoe1c9c2625": {}
+      },
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "dxb7em0ncxc0",
+          "type": "manual"
+        }
       }
     }
   }

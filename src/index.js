@@ -76,6 +76,7 @@ class Board extends React.Component {
 			gameList: [],
 			user: props.user
 		};
+		this.handleList();
 	}
 
 	handleClick (i) {
@@ -182,7 +183,7 @@ class Board extends React.Component {
 				<div className="list-button">
 					<ListGameButton value="List Games" onClick={() => this.handleList()} />;
 				</div>
-				<h4>Saved Games (Click 'List Games' above to fetch your saved games):</h4>
+				<h4>Saved Games:</h4>
 				{this.renderGameList()}
 			</div>
 		);
@@ -197,7 +198,7 @@ class Game extends React.Component {
 
 	render () {
 		return (
-			<div className="game">
+			<div className="game" style={{justifyContent: "center"}}>
 				<div className="game-board">
 					<Board user={this.state.user} />
 				</div>
@@ -205,6 +206,7 @@ class Game extends React.Component {
 					<div>{/* status */}</div>
 					<ol>{/* TODO */}</ol>
 				</div>
+				<AmplifySignOut />
 			</div>
 		);
 	}
@@ -254,13 +256,12 @@ function AuthGame() {
 	  });
 	}, [])
 	if (user) {
-	  return (
-		<div>
-			  <h1>Hello {user.username}</h1>
-			  <Game user={user}/>
-		  <AmplifySignOut />
-		</div>
-	  )
+	  	return (
+			<div>
+				<h1>Hello {user.username}</h1>
+				<Game user={user} />
+			</div>
+	  	)
 	}
 	return (
 	  <div style={{ display: 'flex', justifyContent: 'center' }}>

@@ -270,13 +270,17 @@ function AuthGame() {
 			slot="sign-up"
 			formFields={[
 				{ type: "username" },
-				{ type: "name" },
-			  {
-				type: "password",
-				label: "Password",
-				placeholder: "custom password placeholder"
-			  },
-			  { type: "email" }
+				{
+					type: "name",
+					label: "Name",
+					placeholder: "Enter your name"
+				},
+				{
+					type: "password",
+					label: "Password",
+					placeholder: "Enter a strong password"
+				},
+				{ type: "email" }
 			]} 
 		  />
 		</AmplifyAuthenticator>

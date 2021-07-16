@@ -6,6 +6,7 @@ import { listGames } from "../graphql/queries";
 import { API, graphqlOperation, } from "aws-amplify";
 
 import { SaveGameField, ListGameButton } from './GamePersistence';
+import GameSocket from "./GameSocket";
 
 function Square (props) {
 	return (
@@ -18,27 +19,30 @@ function Square (props) {
 export class Board extends React.Component {
 	constructor(props) {
 		super(props);
+		
 		this.state = {
 			squares: Array(9).fill(null),
 			xIsNext: true,
+			user: { ...props.user, isPlayerX: null },
+			opponentName: null,
 			gameList: [],
-			user: props.user
+			gameSocket: new GameSocket(props.user.username, (square) => this.handleMove(square), (player) => this.handlePlayer(player), (square) => this.handleBadMove(square))
 		};
 		this.handleList();
 	}
 
 	handleClick (i) {
 		const squares = this.state.squares.slice();
-		if (calculateWinner(squares) || squares[i]) {
+		if (calculateWinner(squares) || squares[i] || this.state.user.isPlayerX !== this.state.xIsNext) {
 			return;
 		}
 		
+		this.state.gameSocket.sendMove(i);
 		squares[i] = this.state.xIsNext ? 'X' : 'O';
 		this.setState({
+			...this.state,
 			squares: squares,
 			xIsNext: !this.state.xIsNext,
-			gameList: this.state.gameList,
-			user: this.state.user
 		});
 	}
 
@@ -60,11 +64,47 @@ export class Board extends React.Component {
 		})
 	}
 
+	handleMove (square) {
+		console.log(`handleMove, square: ${square}`)
+		console.log(square)
+		if (this.state.squares[square] !== null) return;
+		const squares = this.state.squares.slice();
+		squares[square] = this.state.xIsNext ? 'X' : 'O';
+		this.setState({
+			...this.state,
+			squares: squares,
+			xIsNext: !this.state.xIsNext,
+		});
+	}
+
+	handleBadMove (square) {
+		console.log(`handleBadMove, square: ${square}`)
+		if (this.state.squares[square] === null) return;
+
+		const squares = this.state.squares.slice();
+		squares[square] = null;
+		this.setState({
+			...this.state,
+			squares: squares,
+			xIsNext: !this.state.xIsNext,
+		});
+	}
+
+	handlePlayer ({ username, isPlayerX }) {
+		console.log("handlePlayer, username: " + username + " isPlayerX: " + isPlayerX);
+
+		this.setState({
+			...this.state,
+			opponentName: username === this.state.user.username ? this.state.opponentName : username,
+			user: { ...this.state.user, isPlayerX: username === this.state.user.username ? isPlayerX : !isPlayerX }
+		})
+	}
+
 	loadGame (squares) {
 		const numNulls = squares.reduce((acc, square) => square == null ? acc += 1 : acc, 0);
 		this.setState({
 			...this.state,
-			xIsNext: numNulls % 2 === 0 ? false : true,
+			xIsNext: numNulls % 2 === 0 ? false : true, // simplify this
 			squares: squares
 		});
 	}
@@ -109,6 +149,7 @@ export class Board extends React.Component {
 
 		return (
 			<div>
+				<div className="opponentName">{this.state.opponentName ? `Playing with ${this.state.opponentName}` : "Waiting for player..."}</div>
 				<div className="status">{status}</div>
 				<div className="board-row">
 					{this.renderSquare(0)}

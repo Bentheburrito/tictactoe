@@ -90,14 +90,15 @@ export class Board extends React.Component {
 		});
 	}
 
-	handlePlayer ({ username, isPlayerX }) {
-		console.log("handlePlayer, username: " + username + " isPlayerX: " + isPlayerX);
-
+	handlePlayer ({ username, isPlayerX, squares }) {
+		console.log("handlePlayer, username: " + username + " isPlayerX: " + isPlayerX + " squares: ");
+		console.log(squares)
 		this.setState({
 			...this.state,
 			opponentName: username === this.state.user.username ? this.state.opponentName : username,
 			user: { ...this.state.user, isPlayerX: username === this.state.user.username ? isPlayerX : !isPlayerX }
-		})
+		});
+		this.loadGame(squares)
 	}
 
 	loadGame (squares) {
@@ -144,7 +145,10 @@ export class Board extends React.Component {
 		if (winner) {
 			status = 'Winner: ' + winner;
 		} else {
-			status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+			const nextPlayerSymbol = this.state.xIsNext ? 'X' : 'O';
+			const isNextPlayer = (nextPlayerSymbol === 'X' && this.state.user.isPlayerX) || (nextPlayerSymbol === 'O' && !this.state.user.isPlayerX) 
+			const nextPlayer = `${isNextPlayer ? this.state.user.username : this.state.opponentName} (${nextPlayerSymbol})`;
+			status = `Next player: ${nextPlayer}`;
 		}
 
 		return (

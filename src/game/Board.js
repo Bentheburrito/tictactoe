@@ -19,14 +19,15 @@ function Square (props) {
 export class Board extends React.Component {
 	constructor(props) {
 		super(props);
-		
+
 		this.state = {
 			squares: Array(9).fill(null),
 			xIsNext: true,
 			user: { ...props.user, isPlayerX: null },
 			opponentName: null,
 			gameList: [],
-			gameSocket: new GameSocket(props.user.username, (square) => this.handleMove(square), (player) => this.handlePlayer(player), (square) => this.handleBadMove(square))
+			playAgainRequest: false,
+			gameSocket: new GameSocket(props.user.username, (square) => this.handleMove(square), (player) => this.handlePlayer(player), (square) => this.handleBadMove(square), (squares) => this.loadGame(squares), () => this.handlePlayAgainRequest())
 		};
 		this.handleList();
 	}
@@ -101,12 +102,20 @@ export class Board extends React.Component {
 		this.loadGame(squares)
 	}
 
+	handlePlayAgainRequest () {
+		this.setState({
+			...this.state,
+			playAgainRequest: true
+		});
+	}
+
 	loadGame (squares) {
 		const numNulls = squares.reduce((acc, square) => square == null ? acc += 1 : acc, 0);
 		this.setState({
 			...this.state,
 			xIsNext: numNulls % 2 === 0 ? false : true, // simplify this
-			squares: squares
+			squares: squares,
+			playAgainRequest: false
 		});
 	}
 
@@ -142,8 +151,12 @@ export class Board extends React.Component {
 	render () {
 		const winner = calculateWinner(this.state.squares);
 		let status;
+		let newGameButton;
+		let playAgainButton;
 		if (winner) {
 			status = 'Winner: ' + winner;
+			newGameButton = <button onClick={() => this.state.gameSocket.newGame()}>New Game</button>;
+			playAgainButton = <button onClick={() => this.state.gameSocket.playAgain()}>Play Again</button>;
 		} else {
 			const nextPlayerSymbol = this.state.xIsNext ? 'X' : 'O';
 			const isNextPlayer = (nextPlayerSymbol === 'X' && this.state.user.isPlayerX) || (nextPlayerSymbol === 'O' && !this.state.user.isPlayerX) 
@@ -155,6 +168,9 @@ export class Board extends React.Component {
 			<div>
 				<div className="opponentName">{this.state.opponentName ? `Playing with ${this.state.opponentName}` : "Waiting for player..."}</div>
 				<div className="status">{status}</div>
+				{newGameButton}
+				{playAgainButton}
+				{this.state.playAgainRequest ? `  ${this.state.opponentName} wants to play again` : null}
 				<div className="board-row">
 					{this.renderSquare(0)}
 					{this.renderSquare(1)}

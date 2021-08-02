@@ -7,6 +7,7 @@ import { API, graphqlOperation, } from "aws-amplify";
 
 import { SaveGameField, ListGameButton } from './GamePersistence';
 import GameSocket from "./GameSocket";
+import { NEW_MOVE_EVENT, GAME_MOVE_REFUSAL, NEW_PLAYER_EVENT, PLAY_AGAIN_EVENT, LOAD_GAME_EVENT } from './constants';
 
 function Square (props) {
 	return (
@@ -20,6 +21,14 @@ export class Board extends React.Component {
 	constructor(props) {
 		super(props);
 
+		const eventFunctionMap = {
+			[NEW_MOVE_EVENT]: this.handleMove.bind(this),
+			[GAME_MOVE_REFUSAL]: this.handleBadMove.bind(this),
+			[NEW_PLAYER_EVENT]: this.handlePlayer.bind(this),
+			[PLAY_AGAIN_EVENT]: this.handlePlayAgainRequest.bind(this),
+			[LOAD_GAME_EVENT]: this.loadGame.bind(this),
+		};
+
 		this.state = {
 			squares: Array(9).fill(null),
 			xIsNext: true,
@@ -27,7 +36,8 @@ export class Board extends React.Component {
 			opponentName: null,
 			gameList: [],
 			playAgainRequest: false,
-			gameSocket: new GameSocket(props.user.username, (square) => this.handleMove(square), (player) => this.handlePlayer(player), (square) => this.handleBadMove(square), (squares) => this.loadGame(squares), () => this.handlePlayAgainRequest())
+			gameSocket: new GameSocket(props.user.username, (event, data) => this.handleGameEvent(event, data)),
+			eventFunctionMap: eventFunctionMap,
 		};
 		this.handleList();
 	}
@@ -45,6 +55,16 @@ export class Board extends React.Component {
 			squares: squares,
 			xIsNext: !this.state.xIsNext,
 		});
+	}
+
+	handleGameEvent (event, data) {
+		const handler = this.state.eventFunctionMap[event];
+		if (handler) {
+			handler(data);
+		} else {
+			console.log('Unknown event:', event);
+			console.log('Passed message:', data);
+		}
 	}
 
 	async handleSave (gameName) {
@@ -66,8 +86,6 @@ export class Board extends React.Component {
 	}
 
 	handleMove (square) {
-		console.log(`handleMove, square: ${square}`)
-		console.log(square)
 		if (this.state.squares[square] !== null) return;
 		const squares = this.state.squares.slice();
 		squares[square] = this.state.xIsNext ? 'X' : 'O';
@@ -92,8 +110,6 @@ export class Board extends React.Component {
 	}
 
 	handlePlayer ({ username, isPlayerX, squares }) {
-		console.log("handlePlayer, username: " + username + " isPlayerX: " + isPlayerX + " squares: ");
-		console.log(squares)
 		this.setState({
 			...this.state,
 			opponentName: username === this.state.user.username ? this.state.opponentName : username,
@@ -170,7 +186,7 @@ export class Board extends React.Component {
 				<div className="status">{status}</div>
 				{newGameButton}
 				{playAgainButton}
-				{this.state.playAgainRequest ? `  ${this.state.opponentName} wants to play again` : null}
+				{this.state.playAgainRequest ? <div>{this.state.opponentName} wants to play again</div> : null}
 				<div className="board-row">
 					{this.renderSquare(0)}
 					{this.renderSquare(1)}

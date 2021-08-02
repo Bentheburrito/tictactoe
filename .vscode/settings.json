@@ -9,10 +9,10 @@
     "amplify/backend/awscloudformation": true
   },
   "files.watcherExclude": {
-	  "**/.git/objects/**": true,
-	  "**/.git/subtree-cache/**": true,
-	  "**/node_modules/**": true,
-	  "**/build/**": true
-},
-"discord.enabled": true
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/build/**": true
+  },
+  "discord.enabled": true
 }

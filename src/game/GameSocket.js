@@ -7,6 +7,7 @@ export default class GameSocket {
 
 		// Creates a WebSocket connection
 		const socket = io(SOCKET_SERVER_URL, {
+			path: "/tictactoe/server",
 			query: { username },
 			reconnectionDelayMax: 10000
 		});

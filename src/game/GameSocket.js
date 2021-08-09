@@ -1,13 +1,13 @@
 import { io } from "socket.io-client";
 
-import { SOCKET_SERVER_URL, NEW_MOVE_EVENT, PLAY_AGAIN_EVENT, NEW_GAME_EVENT } from "./constants";
+import { SOCKET_SERVER_URL, NEW_MOVE_EVENT, PLAY_AGAIN_EVENT, NEW_GAME_EVENT, REQ_LOAD_SAVED_GAME_EVENT } from "./constants";
 
 export default class GameSocket {
 	constructor(username, onEventCallback) {
 
 		// Creates a WebSocket connection
 		const socket = io(SOCKET_SERVER_URL, {
-			path: "/tictactoe/server",
+			path: process.env.NODE_ENV === "production" ? "/tictactoe/server" : "/socket.io",
 			query: { username },
 			reconnectionDelayMax: 10000
 		});
@@ -15,7 +15,7 @@ export default class GameSocket {
 		this.state = {
 			socket: socket
 		}
-		console.log(socket);
+
 		// Listens for incoming game events
 		socket.onAny((eventName, ...data) => onEventCallback(eventName, ...data));
 	}
@@ -34,5 +34,9 @@ export default class GameSocket {
 
 	newGame = () => {
 		this.state.socket.emit(NEW_GAME_EVENT);
+	}
+
+	loadGameRequest = () => {
+		this.state.socket.emit(REQ_LOAD_SAVED_GAME_EVENT);
 	}
 };

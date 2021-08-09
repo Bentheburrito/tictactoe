@@ -5,3 +5,5 @@ export const NEW_PLAYER_EVENT = "newPlayer";
 export const PLAY_AGAIN_EVENT = "playAgain";
 export const NEW_GAME_EVENT = "newGame";
 export const LOAD_GAME_EVENT = "loadGame";
+export const REQ_LOAD_SAVED_GAME_EVENT = "requestSavedGame";
+export const ACC_LOAD_SAVED_GAME_EVENT = "acceptSavedGame";

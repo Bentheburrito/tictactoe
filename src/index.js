@@ -37,9 +37,11 @@ function AuthGame() {
 	if (user) {
 	  	return (
 			<div>
-				<h1>Hello {user.username}</h1>
+				<header className="container">
+					<h1>Hello {user.username}</h1>
+					<div style={{maxWidth: '40px'}}><AmplifySignOut /></div>
+				</header>
 				<Game user={user} />
-				<AmplifySignOut />
 			</div>
 	  	)
 	}

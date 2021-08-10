@@ -6,7 +6,7 @@ export default class GameSocket {
 	constructor(username, onEventCallback) {
 
 		// Creates a WebSocket connection
-		const socket = io(SOCKET_SERVER_URL, {
+		const socket = io(process.env.NODE_ENV === "production" ? SOCKET_SERVER_URL : "http://192.168.1.44:4000", {
 			path: process.env.NODE_ENV === "production" ? "/tictactoe/server" : "/socket.io",
 			query: { username },
 			reconnectionDelayMax: 10000

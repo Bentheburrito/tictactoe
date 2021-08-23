@@ -10,7 +10,7 @@ import { SaveGameField, ListGameButton } from './GamePersistence';
 import GameSocket from "./GameSocket";
 
 import { Board, calculateWinner } from './Board';
-import { NEW_MOVE_EVENT, GAME_MOVE_REFUSAL, NEW_PLAYER_EVENT, PLAY_AGAIN_EVENT, LOAD_GAME_EVENT } from './constants';
+import { NEW_MOVE_EVENT, GAME_MOVE_REFUSAL, NEW_PLAYER_EVENT, PLAY_AGAIN_EVENT, LOAD_GAME_EVENT, REQ_LOAD_SAVED_GAME_EVENT, ACC_LOAD_SAVED_GAME_EVENT, REJ_LOAD_SAVED_GAME_EVENT } from './constants';
 
 export class Game extends React.Component {
 	constructor(props) {
@@ -22,6 +22,9 @@ export class Game extends React.Component {
 			[NEW_PLAYER_EVENT]: this.handlePlayer.bind(this),
 			[PLAY_AGAIN_EVENT]: this.handlePlayAgainRequest.bind(this),
 			[LOAD_GAME_EVENT]: this.loadGame.bind(this),
+			[REQ_LOAD_SAVED_GAME_EVENT]: this.handleLoadGameRequest.bind(this),
+			[ACC_LOAD_SAVED_GAME_EVENT]: this.handleLoadGameAccept.bind(this),
+			[REJ_LOAD_SAVED_GAME_EVENT]: this.handleLoadGameReject.bind(this),
 		};
 
 		this.state = {
@@ -32,6 +35,7 @@ export class Game extends React.Component {
 			opponentName: null,
 			gameList: [],
 			playAgainRequest: false,
+			loadGameRequest: null,
 			gameSocket: new GameSocket(props.user.username, (event, data) => this.handleGameEvent(event, data)),
 			eventFunctionMap: eventFunctionMap,
 		}
@@ -121,6 +125,28 @@ export class Game extends React.Component {
 		});
 	}
 
+	handleLoadGameRequest (squares) {
+		this.setState({
+			...this.state,
+			loadGameRequest: squares
+		});
+	}
+
+	handleLoadGameAccept (squares) {
+		this.setState({
+			...this.state,
+			loadGameRequest: null,
+		});
+		this.loadGame(squares);
+	}
+
+	handleLoadGameReject (squares) {
+		this.setState({
+			...this.state,
+			loadGameRequest: `${this.state.opponentName} rejected your request to load a saved game.`,
+		});
+	}
+
 	loadGame (squares) {
 		const numNulls = squares.reduce((acc, square) => square == null ? acc += 1 : acc, 0);
 		this.setState({
@@ -145,7 +171,7 @@ export class Game extends React.Component {
 			games.push(
 				<div key={id}>
 					{name}:
-					<button onClick={() => this.loadGame(squares)}>Load</button>
+					<button onClick={() => this.state.gameSocket.loadGameRequest(squares)}>Load</button>
 					<button onClick={() => this.deleteGame(id)}>Delete</button>
 				</div>
 			);
@@ -155,7 +181,6 @@ export class Game extends React.Component {
 			{games}
 		</div>)
 	}
-	
 
 	render () {
 		const winner = calculateWinner(this.state.squares);
@@ -174,7 +199,7 @@ export class Game extends React.Component {
 		}
 
 		return (
-			<div className="game" style={{ justifyContent: "center" }}>
+			<div className="game" style={{ justifyContent: "center", width: '100%' }}>
 				
 				<div className="game-board">
 					<div className="opponentName">{this.state.opponentName ? `Playing with ${this.state.opponentName}` : "Waiting for player..."}</div>
@@ -194,6 +219,20 @@ export class Game extends React.Component {
 					</div>
 					<h4>Saved Games:</h4>
 					{this.renderGameList()}
+				</div>
+				<div>
+					{Array.isArray(this.state.loadGameRequest) ?
+						<div>
+							{this.state.opponentName} is requesting to load one of their saved games:
+							<Board onClick={() => null} squares={this.state.loadGameRequest} />
+							<button onClick={() => this.state.gameSocket.loadGameAccept(this.state.loadGameRequest)}>Accept</button>
+							<button onClick={() => {
+								this.state.gameSocket.loadGameReject(this.state.loadGameRequest);
+								this.setState({...this.state, loadGameRequest: null});
+							}}>Reject</button>
+						</div>
+						: this.state.loadGameRequest
+					}
 				</div>
 			</div>
 		);

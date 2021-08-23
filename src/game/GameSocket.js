@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-import { SOCKET_SERVER_URL, NEW_MOVE_EVENT, PLAY_AGAIN_EVENT, NEW_GAME_EVENT, REQ_LOAD_SAVED_GAME_EVENT } from "./constants";
+import { SOCKET_SERVER_URL, NEW_MOVE_EVENT, PLAY_AGAIN_EVENT, NEW_GAME_EVENT, REQ_LOAD_SAVED_GAME_EVENT, ACC_LOAD_SAVED_GAME_EVENT, REJ_LOAD_SAVED_GAME_EVENT } from "./constants";
 
 export default class GameSocket {
 	constructor(username, onEventCallback) {
@@ -36,7 +36,15 @@ export default class GameSocket {
 		this.state.socket.emit(NEW_GAME_EVENT);
 	}
 
-	loadGameRequest = () => {
-		this.state.socket.emit(REQ_LOAD_SAVED_GAME_EVENT);
+	loadGameRequest = squares => {
+		this.state.socket.emit(REQ_LOAD_SAVED_GAME_EVENT, squares);
+	}
+
+	loadGameAccept = squares => {
+		this.state.socket.emit(ACC_LOAD_SAVED_GAME_EVENT, squares);
+	}
+
+	loadGameReject = squares => {
+		this.state.socket.emit(REJ_LOAD_SAVED_GAME_EVENT, squares);
 	}
 };

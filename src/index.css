@@ -43,8 +43,17 @@ body {
   .game {
 	display: flex;
 	flex-direction: row;
+	display: grid;
+	grid-template-columns: 50vw;
+	grid-gap: 10px;
+	justify-items: center;
   }
   
   .game-info {
 	margin-left: 20px;
+  }
+  
+  .box {
+	border-radius: 5px;
+	padding: 20px;
   }
